@@ -1,0 +1,465 @@
+
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>建立XML標籤</title>
+</head>
+<body>
+    <h2>請增加影像的名稱和座標</h2>
+    <!-- 修改 action 屬性為空，即提交表單時將在當前頁面處理 -->
+    <form action="" method="post"  id="annotation-form">
+        <label for="file_name">File Name:</label>
+        <input type="text" name="file_name" id="file_name"required>
+        <br>
+        <label for="x0">x0:</label>
+        <input type="number" name="x0" id="x0" required>
+        <br>
+        <label for="y0">y0:</label>
+        <input type="number" name="y0" id="y0" required>
+        <br>
+        <label for="x1">x1:</label>
+        <input type="number" name="x1" id="x1" required>
+        <br>
+        <label for="y1">y1:</label>
+        <input type="number" name="y1" id="y1" required>
+        <br>
+        <label for="x2">x2:</label>
+        <input type="number" name="x2" id="x2" required>
+        <br>
+        <label for="y2">y2:</label>
+        <input type="number" name="y2" id="y2" required>
+        <br>
+        <label for="x3">x3:</label>
+        <input type="number" name="x3" id="x3" required>
+        <br>
+        <label for="y3">y3:</label>
+        <input type="number" name="y3" id="y3" required>
+        <br>
+        <input type="submit" value="Add Annotation">
+
+        
+ 
+</body>
+</html>
+
+
+
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>客製化影像標籤工具</title>
+    <style>
+        #image-container {
+            text-align: center;
+            position: relative;
+        }
+
+        #image-container img {
+              /* width: 1280px;
+            height: 800px;  */
+            display: none; /* 初始隐藏图像 */
+        }
+
+        #coordinates {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px;
+            display: none;
+        }
+
+        .custom-button {
+            background: url('img/left-arrow-image-url.png') no-repeat;
+            width: 200px;
+            height: 200px;
+            border: none;
+            cursor: pointer;
+            background-size: contain;
+            position: relative;
+            display: none;
+        }
+
+        #prev-button {
+            background-image: url('img/left-arrow-image-url.png');
+            position: absolute;
+            top: 50%; /* 将按钮的顶部与父容器中间对齐 */
+            transform: translateY(-50%); /* 通过位移来垂直居中 */
+            left: 0; /* 左按钮的位置 */
+        }
+
+        #next-button {
+            background-image: url('img/right-arrow-image-url.png');
+            position: absolute;
+            top: 50%; /* 将按钮的顶部与父容器中间对齐 */
+            transform: translateY(-50%); /* 通过位移来垂直居中 */
+            right: 0; /* 右按钮的位置 */
+        }
+
+        
+    </style>
+</head>
+<body>
+    <h1>客製化影像標籤工具</h1>
+    <label for="images" class="custom-file-upload">
+    <span>選擇圖片</span>
+    <input type="file" name="images[]" id="images" multiple="multiple" accept="image/*" />
+</label>
+
+<style>
+    .custom-file-upload {
+        background-color: #3498db; /* 設定背景顏色 */
+        color: #fff; /* 設定文字顏色 */
+        border: 2px solid #2980b9; /* 設定邊框顏色 */
+        
+
+        display: inline-block;
+        padding: 8px 12px;
+        cursor: pointer;
+    }
+
+    .custom-file-upload span {
+        margin-right: 10px;
+    }
+
+    .custom-file-upload input {
+        display: none;
+    }
+    .red-dot {
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%); /* 將紅點的中心置中 */
+}
+.number-label {
+    position: absolute;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    width: 20px;
+}
+.blue-line {
+    position: absolute;
+    height: 2px; /* 藍線的高度 */
+    background-color: blue; /* 藍線的顏色 */
+    transform-origin: 0% 50%; /* 設置變換的原點為左邊中心 */
+}
+
+
+    #image-container {
+            position: relative;
+        }
+
+    
+</style>
+
+        <!-- <<input type="file" name="images[]" id="images" multiple="multiple" accept="image/*" title="選擇多張圖片" /> -->
+
+        <!-- <input type="submit" value="上傳圖片" /> -->
+    </form>
+    <div id="image-container">
+        <!-- <button id="prev-button" class="custom-button" onclick="showPreviousImage()"></button> -->
+        <img id="current-image" src='file_name' alt="Image" />
+        <!-- <button id="next-button" class="custom-button" onclick="showNextImage()"></button> -->
+        <div id="coordinates">X: 0, Y: 0</div>
+        <!-- <img id="current-image"  alt="Image" width="1280" height="800"> -->
+        <div id="red-dots-container"></div>
+    </div>
+    </div>
+    <input type="hidden" name="current_coordinate" id="current-coordinate" value="0">
+    <script>
+        var images = [];
+        var currentImageIndex = 0;
+        var currentImage = document.getElementById('current-image');
+        var coordinates = document.getElementById('coordinates');
+        var prevButton = document.getElementById('prev-button');
+        var nextButton = document.getElementById('next-button');
+        var isDrawing = false; 
+
+        // 新增用於追蹤當前應該填入的座標的變數
+        var currentCoordinate = 0;
+
+        function showPreviousImage() {
+            if (currentImageIndex > 0) {
+                currentImageIndex--;
+                currentImage.src = images[currentImageIndex].src;
+                updateCoordinates();
+            }
+        }
+
+        function showNextImage() {
+            if (currentImageIndex < images.length - 1) {
+                currentImageIndex++;
+                currentImage.src = images[currentImageIndex].src;
+                updateCoordinates();
+                // 切換到下一個座標
+                currentCoordinate++;
+                document.getElementById('current-coordinate').value = currentCoordinate;
+            }
+        }
+
+        function updateCoordinates() {
+        // 根據 currentCoordinate 判斷應該填入的座標
+        coordinates.innerHTML = 'X: 0, Y: 0';  // 初始化座標
+        if (currentCoordinate === 1) {
+            coordinates.innerHTML = 'X: ' + x0 + ', Y: ' + y0;
+        } else if (currentCoordinate === 2) {
+            coordinates.innerHTML = 'X: ' + x1 + ', Y: ' + y1;
+        } else if (currentCoordinate === 3) {
+            coordinates.innerHTML = 'X: ' + x2 + ', Y: ' + y2;
+        } else if (currentCoordinate === 4) {
+            coordinates.innerHTML = 'X: ' + x3 + ', Y: ' + y3;
+        }
+    }
+
+        document.getElementById('images').addEventListener('change', function (e) {
+            currentImageIndex = 0;
+            var files = e.target.files;
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var image = new Image();
+                    image.src = e.target.result;
+                    images.push(image);
+                    if (images.length === 1) {
+                        currentImage.src = image.src;
+                        currentImage.style.display = 'inline';
+                        // prevButton.style.display = 'inline';
+                        // nextButton.style.display = 'inline';
+                        document.getElementById('file_name').value = file.name;
+                        updateCoordinates();
+                        // 將文件名設置為表單元素的值
+                        
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+
+        
+        document.getElementById('current-image').addEventListener('mousemove', function (e) {
+    var x = e.offsetX;
+    var y = e.offsetY;
+    var original_x = x ;
+    var original_y = y ;
+
+    // 將座標設置為表單元素的值
+    // document.getElementById('x' + currentCoordinate).value = Math.round(original_x);
+    // document.getElementById('y' + currentCoordinate).value = Math.round(original_y);
+
+    // 更新顯示的座標
+    coordinates.innerHTML = 'X: ' + Math.round(original_x) + ', Y: ' + Math.round(original_y);
+    coordinates.style.display = 'block';
+});
+var currentCoordinate = 0; // 新增一個變數用於跟蹤當前的座標索引
+
+document.getElementById('current-image').addEventListener('click', function (e) {
+    var x = e.offsetX;
+    var y = e.offsetY;
+    // var original_x = x / 1280 * currentImage.naturalWidth;
+    // var original_y = y / 800 * currentImage.naturalHeight;
+    var original_x = x ;
+    var original_y = y ;
+
+    // 根據當前座標索引更新對應的表單元素的值
+    document.getElementById('x' + currentCoordinate).value = Math.round(original_x);
+    document.getElementById('y' + currentCoordinate).value = Math.round(original_y);
+
+    // 更新顯示的座標
+    coordinates.innerHTML = 'X: ' + Math.round(original_x) + ', Y: ' + Math.round(original_y);
+    coordinates.style.display = 'block';
+
+    // 將座標索引移動到下一個位置
+    currentCoordinate++;
+
+    // 如果已經達到最後一個座標，重置為第一個座標
+    if (currentCoordinate > 3) {
+        currentCoordinate = 0;
+    }
+    // 獲取紅點元素
+    var redDot = document.getElementById('red-dot');
+
+// 設定紅點位置
+redDot.style.left = e.layerX + 'px';
+redDot.style.top =  e.layerY + 'px';
+
+// 顯示紅點
+redDot.style.display = 'block';
+});
+var redDots = []; // 存儲紅點的坐標
+var maxRedDots = 4; // 最多 4 個紅點
+
+document.getElementById('current-image').addEventListener('click', function (e) {
+    if (redDots.length >= maxRedDots) {
+        // 清空之前的點
+        redDots = [];
+    }
+
+    var x = e.layerX;
+    var y = e.layerY;
+
+    redDots.push({ x: x, y: y });
+    updateRedDots();
+});
+
+function updateRedDots() {
+    var redDotsContainer = document.getElementById('red-dots-container');
+    redDotsContainer.innerHTML = ''; // 清空容器內的內容
+
+    redDots.forEach(function (dot, index) {
+        // 顯示紅點
+        var redDot = document.createElement('div');
+        redDot.className = 'red-dot';
+        redDot.style.left = dot.x + 'px';
+        redDot.style.top = dot.y + 'px';
+        redDotsContainer.appendChild(redDot);
+
+        // 顯示數字
+        var numberLabel = document.createElement('div');
+        numberLabel.className = 'number-label';
+        numberLabel.innerHTML = index;
+        numberLabel.style.left = dot.x + 'px';
+        numberLabel.style.top = dot.y - 20 + 'px'; // 將數字標籤上移一些，使其顯示在紅點的上方
+        redDotsContainer.appendChild(numberLabel);
+    });
+
+    // 連接相鄰的紅點
+    for (var i = 0; i < redDots.length - 1; i++) {
+        var currentDot = redDots[i];
+        var nextDot = redDots[i + 1];
+
+        // 顯示藍色線
+        var blueLine = document.createElement('div');
+        blueLine.className = 'blue-line';
+        blueLine.style.width = getDistance(currentDot, nextDot) + 'px';
+        blueLine.style.transform = 'rotate(' + getAngle(currentDot, nextDot) + 'deg)';
+        blueLine.style.left = currentDot.x + 'px';
+        blueLine.style.top = currentDot.y + 'px';
+        redDotsContainer.appendChild(blueLine);
+    }
+}
+
+// 計算兩點之間的距離
+function getDistance(dot1, dot2) {
+    var dx = dot2.x - dot1.x;
+    var dy = dot2.y - dot1.y;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+// 計算兩點之間的角度
+function getAngle(dot1, dot2) {
+    var dx = dot2.x - dot1.x;
+    var dy = dot2.y - dot1.y;
+    return Math.atan2(dy, dx) * (180 / Math.PI);
+}
+
+
+
+
+        document.getElementById('current-image').addEventListener('mouseout', function () {
+            coordinates.style.display = 'none';
+        });
+
+        document.getElementById('annotation-form').addEventListener('submit', function (e) {
+        e.preventDefault(); //防止表單預設的提交行為
+
+        // 收集表单数据
+        var fullFileName = document.getElementById('file_name').value;
+        var fileNameWithoutExtension = removeExtension(fullFileName);
+        var x0 = document.getElementById('x0').value;
+        var y0 = document.getElementById('y0').value;
+        var x1 = document.getElementById('x1').value;
+        var y1 = document.getElementById('y1').value;
+        var x2 = document.getElementById('x2').value;
+        var y2 = document.getElementById('y2').value;
+        var x3 = document.getElementById('x3').value;
+        var y3 = document.getElementById('y3').value;
+
+        // 生成 XML 字符串
+        var xmlString = generateXML(fileNameWithoutExtension, x0, y0, x1, y1, x2, y2, x3, y3);
+
+        // 下載XML文件
+        downloadXML(xmlString, fileNameWithoutExtension + '.xml');
+    });
+
+    function removeExtension(fileName) {
+        // 使用正規表示式取出檔案副檔名
+        return fileName.replace(/\.[^/.]+$/, "");
+    }
+
+    function generateXML(fileName, x0, y0, x1, y1, x2, y2, x3, y3) {
+        // 這裡根據你的XML格式產生XML字串
+        var xmlString = '<annotation>\n';
+        xmlString += '    <size>\n';
+        xmlString += '        <width>1920</width>\n';
+        xmlString += '        <height>1080</height>\n';
+        xmlString += '        <depth>3</depth>\n';
+        xmlString += '    </size>\n';
+        xmlString += '    <object>\n';
+        xmlString += '        <name>1</name>\n';
+        xmlString += '        <bndbox>\n';
+        xmlString += '            <x0>' + x0 + '</x0>\n';
+        xmlString += '            <y0>' + y0 + '</y0>\n';
+        xmlString += '            <x1>' + x1 + '</x1>\n';
+        xmlString += '            <y1>' + y1 + '</y1>\n';
+        xmlString += '            <x2>' + x2 + '</x2>\n';
+        xmlString += '            <y2>' + y2 + '</y2>\n';
+        xmlString += '            <x3>' + x3 + '</x3>\n';
+        xmlString += '            <y3>' + y3 + '</y3>\n';
+        xmlString += '        </bndbox>\n';
+        xmlString += '    </object>\n';
+        xmlString += '</annotation>';
+
+        return xmlString;
+    }
+
+    function downloadXML(xmlString, fileName) {
+        var blob = new Blob([xmlString], { type: 'text/xml' });
+        var link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+    }
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draw Red Dots</title>
+    <style>
+       
+    </style>
+</head>
+<body>
+   
+
+    <!-- <script>
+        document.getElementById('current-image').addEventListener('click', function (e) {
+            // 獲取鼠標點擊位置
+            var x = e.offsetX;
+            var y = e.offsetY;
+
+            // 獲取紅點元素
+            var redDot = document.getElementById('red-dot');
+
+            // 設定紅點位置
+            redDot.style.left = x + 'px';
+            redDot.style.top = y + 'px';
+
+            // 顯示紅點
+            redDot.style.display = 'block';
+        });
+    </script> -->
+</body>
+</html>
