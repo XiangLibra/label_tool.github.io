@@ -7,7 +7,7 @@
 2. 點自己想要點的4個點
 3. 按下 "Add annotation" 即可下載這個圖片的XML標籤檔，標籤檔的格式如下:
 
-''' 
+```xml
 <annotation>
     <size>
         <width>1920</width>
@@ -28,6 +28,6 @@
         </bndbox>
     </object>
 </annotation>
-'''
+```
    
 
