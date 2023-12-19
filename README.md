@@ -4,8 +4,9 @@
 
 ## 使用方法
 1. 選擇圖片
-2. 點自己想要點的4個點
-3. 按下 "Add annotation" 即可下載這個圖片的XML標籤檔，標籤檔的格式如下:
+2. 點自己想要點的4個點，如下圖:
+![這是圖片](demo_img/lebel_tool.png "Label")
+4. 按下 "Add annotation" 即可下載這個圖片的XML標籤檔，標籤檔的格式如下:
 
 ```xml
 <annotation>
