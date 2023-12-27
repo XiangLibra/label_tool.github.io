@@ -387,9 +387,13 @@ function getAngle(dot1, dot2) {
         var y2 = document.getElementById('y2').value;
         var x3 = document.getElementById('x3').value;
         var y3 = document.getElementById('y3').value;
+        // 獲取圖片的實際寬度和高度
+        var image = document.getElementById('current-image');
+        var imageWidth = image.naturalWidth;
+        var imageHeight = image.naturalHeight;
 
         // 生成 XML 字符串
-        var xmlString = generateXML(fileNameWithoutExtension, x0, y0, x1, y1, x2, y2, x3, y3);
+        var xmlString = generateXML(fileNameWithoutExtension, x0, y0, x1, y1, x2, y2, x3, y3, imageWidth, imageHeight);
 
         // 下載XML文件
         downloadXML(xmlString, fileNameWithoutExtension + '.xml');
@@ -442,31 +446,31 @@ function getAngle(dot1, dot2) {
     }
     
 
-    function generateXML(fileName, x0, y0, x1, y1, x2, y2, x3, y3) {
-        // 這裡根據你的XML格式產生XML字串
-        var xmlString = '<annotation>\n';
-        xmlString += '    <size>\n';
-        xmlString += '        <width>1920</width>\n';
-        xmlString += '        <height>1080</height>\n';
-        xmlString += '        <depth>3</depth>\n';
-        xmlString += '    </size>\n';
-        xmlString += '    <object>\n';
-        xmlString += '        <name>1</name>\n';
-        xmlString += '        <bndbox>\n';
-        xmlString += '            <x0>' + x0 + '</x0>\n';
-        xmlString += '            <y0>' + y0 + '</y0>\n';
-        xmlString += '            <x1>' + x1 + '</x1>\n';
-        xmlString += '            <y1>' + y1 + '</y1>\n';
-        xmlString += '            <x2>' + x2 + '</x2>\n';
-        xmlString += '            <y2>' + y2 + '</y2>\n';
-        xmlString += '            <x3>' + x3 + '</x3>\n';
-        xmlString += '            <y3>' + y3 + '</y3>\n';
-        xmlString += '        </bndbox>\n';
-        xmlString += '    </object>\n';
-        xmlString += '</annotation>';
+    function generateXML(fileName, x0, y0, x1, y1, x2, y2, x3, y3, imageWidth, imageHeight) {
+    // 這裡根據你的XML格式產生XML字串，使用實際的圖片寬度和高度
+    var xmlString = '<annotation>\n';
+    xmlString += '    <size>\n';
+    xmlString += '        <width>' + imageWidth + '</width>\n';
+    xmlString += '        <height>' + imageHeight + '</height>\n';
+    xmlString += '        <depth>3</depth>\n';
+    xmlString += '    </size>\n';
+    xmlString += '    <object>\n';
+    xmlString += '        <class>1</class>\n';
+    xmlString += '        <bndbox>\n';
+    xmlString += '            <x0>' + x0 + '</x0>\n';
+    xmlString += '            <y0>' + y0 + '</y0>\n';
+    xmlString += '            <x1>' + x1 + '</x1>\n';
+    xmlString += '            <y1>' + y1 + '</y1>\n';
+    xmlString += '            <x2>' + x2 + '</x2>\n';
+    xmlString += '            <y2>' + y2 + '</y2>\n';
+    xmlString += '            <x3>' + x3 + '</x3>\n';
+    xmlString += '            <y3>' + y3 + '</y3>\n';
+    xmlString += '        </bndbox>\n';
+    xmlString += '    </object>\n';
+    xmlString += '</annotation>';
 
-        return xmlString;
-    }
+    return xmlString;
+}
 
     function downloadXML(xmlString, fileName) {
         var blob = new Blob([xmlString], { type: 'text/xml' });
